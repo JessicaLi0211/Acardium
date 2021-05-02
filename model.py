@@ -13,13 +13,12 @@ def hyperparam_tuning(dataset, const_params, max_eval, k_fold,tuning_metric):
     # details see hyperop.py
     parameter_space = {
         'learning_rate': hyperopt.hp.uniform('learning_rate', 0.01, 1.0),
-        'depth': hyperopt.hp.randint('depth', 8),
+        'depth': hyperopt.hp.randint('depth', 10),
         'l2_leaf_reg': hyperopt.hp.uniform('l2_leaf_reg', 1, 10),
-        'scale_pos_weight': hyperopt.hp.uniform('scale_pos_weight', 1, 10),
-        'tuning_metrics':tuning_metric}
+        'scale_pos_weight': hyperopt.hp.uniform('scale_pos_weight', 1, 10)}
 
     # feeding objective function to hyperop as AUC
-    objective = RevenueClassifierObjective(dataset=dataset, const_params=const_params, k_fold=k_fold)
+    objective = RevenueClassifierObjective(dataset=dataset, const_params=const_params, k_fold=k_fold,tuning_metric=tuning_metric)
     trials = hyperopt.Trials()
     # find the best combination of hyperparameters
     best = hyperopt.fmin(

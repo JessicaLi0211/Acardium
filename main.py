@@ -69,6 +69,7 @@ def classification_model(raw_data_file,
         const_params,
         hyperopt_iterations,
         k_fold,
+        tuning_metric,
         use_predefined_params)
     print('best params are {}'.format(params), file=sys.stdout)
 

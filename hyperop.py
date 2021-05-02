@@ -16,11 +16,12 @@ import hyperopt
 
 
 class RevenueClassifierObjective(object):
-    def __init__(self, dataset, const_params, k_fold):
+    def __init__(self, dataset, const_params, k_fold,tuning_metric):
         self._dataset = dataset
         self._const_params = const_params.copy()
         self._k_fold = k_fold
         self._evaluated_count = 0
+        self._tuning_metric = tuning_metric
 
     def convert_catboost_params(self, hyper_params):
         # get params for tuning for catboost classifier learning rate: used for reducing gradient decent step size
@@ -44,7 +45,7 @@ class RevenueClassifierObjective(object):
         metrics = {'AUC':'test-auc-mean',
                    'F1':'test-F1:use_weights=true-mean',
                    'BalancedAccuracy':'test-BalancedAccuracy:use_weights=true-mean'}
-        tuning_metrics = metrics[hyper_params['tuning_metrics']]
+        tuning_metrics = metrics[self._tuning_metric]
         # k-fold cross-validation to avoid over-fitting
         scores = cb.cv(
             pool=self._dataset,
