@@ -35,13 +35,16 @@ class RevenueClassifierObjective(object):
             'scale_pos_weight': hyper_params['scale_pos_weight']}
 
     # objective function for hyperopt to optimize
-    # here maximize the auc as we have a binary classification case
     def __call__(self, hyper_params):
         # join tunable and constant hyper-params
         params = self.convert_catboost_params(hyper_params)
         params.update(self._const_params)
         sys.stdout.flush()
-
+        # options to optimize different metrics based on business use case
+        metrics = {'AUC':'test-auc-mean',
+                   'F1':'test-F1:use_weights=true-mean',
+                   'BalancedAccuracy':'test-BalancedAccuracy:use_weights=true-mean'}
+        tuning_metrics = metrics[hyper_params['tuning_metrics']]
         # k-fold cross-validation to avoid over-fitting
         scores = cb.cv(
             pool=self._dataset,
@@ -51,11 +54,11 @@ class RevenueClassifierObjective(object):
             verbose=False)
 
         # AUC per fold
-        max_mean_auc = np.max(scores['test-AUC-mean'])
-        print('evaluated score={}'.format(max_mean_auc), file=sys.stdout)
+        max_mean_score = np.max(scores[tuning_metrics])
+        print('evaluated score={}'.format(max_mean_score), file=sys.stdout)
 
         self._evaluated_count += 1
         print('evaluated {} times'.format(self._evaluated_count), file=sys.stdout)
 
         # minimize the negative auc --> maximize actual auc
-        return {'loss': -max_mean_auc, 'status': hyperopt.STATUS_OK}
+        return {'loss': -max_mean_score, 'status': hyperopt.STATUS_OK}
