@@ -35,6 +35,8 @@ weighted avg       0.89      0.84      0.86      2466
 auc:  0.9275205569467384
 ```
 
+![](https://github.com/JessicaLi0211/online-transaction-classifier/blob/master/ROC_curve.png)
+
 ## Model overview and rationale
 
 After EDA in EDA.ipynb, a few observations guide the selection of model for this use case:
@@ -83,7 +85,8 @@ Tunable hyper parameters:
 - Additional featues:
   
   timestamp per session
-  user transaction history with more details such as frequency, recency, monetary information
-  sentiment of product mentioned (can be from google trend)
+  
+  user transaction history with more details such as frequency, recency, monetary informationsentiment of product mentioned (can be from google trend)
+  
   and othe relevant information for this specific use case
     
