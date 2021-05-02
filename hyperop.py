@@ -5,26 +5,25 @@ import numpy as np
 
 
 class RevenueClassifierObjective(object):
-    def __init__(self, dataset, const_params, fold_count):
+    def __init__(self, dataset, const_params, k_fold):
         self._dataset = dataset
         self._const_params = const_params.copy()
-        self._fold_count = fold_count
+        self._k_fold = k_fold
         self._evaluated_count = 0
 
     def convert_catboost_params(self, hyper_params):
-        # get params for tuning for catboost classifier
-        # learning rate: used for reducing gradient decent stpe
-        # depth: max_depth of the tree
-        # l2_leaf_reg: coefficient at the L2 regularization term of the cost function
-        # auto_class_weights: battles imbalanced dataset
+        # get params for tuning for catboost classifier learning rate: used for reducing gradient decent step size
+        # max_depth of the tree l2_leaf_reg: coefficient at the L2 regularization term of the cost function
+        # scale_pos_weight: The weight for class 1 in binary classification. The value is used as a multiplier for
+        # the weights of objects from class 1.
         return {
             'learning_rate': hyper_params['learning_rate'],
             'depth': hyper_params['depth'],
             'l2_leaf_reg': hyper_params['l2_leaf_reg'],
-            'auto_class_weights': hyper_params['auto_class_weights']}
+            'scale_pos_weight': hyper_params['scale_pos_weight']}
 
     # objective function for hyperopt to optimize
-    # here optimize log loss as we have a binary classification case
+    # here maximize the auc as we have a binary classification case
     def __call__(self, hyper_params):
         # join tunable and constant hyper-params
         params = self.convert_catboost_params(hyper_params)
@@ -35,7 +34,7 @@ class RevenueClassifierObjective(object):
         scores = cb.cv(
             pool=self._dataset,
             params=params,
-            fold_count=self._fold_count,
+            fold_count=self._k_fold,
             partition_random_seed=42,
             verbose=False)
 
@@ -46,4 +45,5 @@ class RevenueClassifierObjective(object):
         self._evaluated_count += 1
         print('evaluated {} times'.format(self._evaluated_count), file=sys.stdout)
 
+        # minimize the negative auc --> maximize actual auc
         return {'loss': -max_mean_auc, 'status': hyperopt.STATUS_OK}
