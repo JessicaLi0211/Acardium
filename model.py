@@ -8,14 +8,15 @@ import numpy as np
 
 
 # helper function for hyperparameter tuning
-def hyperparam_tuning(dataset, const_params, max_eval, k_fold):
+def hyperparam_tuning(dataset, const_params, max_eval, k_fold,tuning_metric):
     # optimize four parameters
     # details see hyperop.py
     parameter_space = {
         'learning_rate': hyperopt.hp.uniform('learning_rate', 0.01, 1.0),
         'depth': hyperopt.hp.randint('depth', 8),
         'l2_leaf_reg': hyperopt.hp.uniform('l2_leaf_reg', 1, 10),
-        'scale_pos_weight': hyperopt.hp.uniform('scale_pos_weight', 1, 10)}
+        'scale_pos_weight': hyperopt.hp.uniform('scale_pos_weight', 1, 10),
+        'tuning_metrics':tuning_metric}
 
     # feeding objective function to hyperop as AUC
     objective = RevenueClassifierObjective(dataset=dataset, const_params=const_params, k_fold=k_fold)
@@ -31,7 +32,7 @@ def hyperparam_tuning(dataset, const_params, max_eval, k_fold):
 
 
 # helper function to find the best model with cv with training data
-def train_best_model(X, y, const_params, max_evals, k_fold, use_default=False):
+def train_best_model(X, y, const_params, max_evals, k_fold, tuning_metric, use_default=False):
     # convert pandas.DataFrame to catboost.Pool
     # categorical feature is marked by the dtype = object in preproc
     dataset = cb.Pool(X, y, cat_features=np.where(X.dtypes == object)[0])
@@ -45,7 +46,7 @@ def train_best_model(X, y, const_params, max_evals, k_fold, use_default=False):
             'l2_leaf_reg': 3,
             'scale_pos_weight': 5}
     else:
-        best = hyperparam_tuning(dataset=dataset, const_params=const_params, max_eval=max_evals, k_fold=k_fold)
+        best = hyperparam_tuning(dataset=dataset, const_params=const_params, max_eval=max_evals, k_fold=k_fold, tuning_metric= tuning_metric)
 
     # merge tuned hyperparameters with the predefined hyperparameters
     hyper_params = best.copy()
