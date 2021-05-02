@@ -1,7 +1,18 @@
+# hyper-parameter tuning under hyperop framework
+# under this framework, we need to provide an objective to optimize
+# as the use case is binary classification with imbalanced class, we will optimize AUC
+# use cross validation, we will try to avoid over-fitting
+# hyper-parameters to be tune:
+# learning rate
+# max tree depth
+# l2 regularization strength
+# rebalanced weight for positive class
+
+# import libs
 import sys
-import hyperopt
 import catboost as cb
 import numpy as np
+import hyperopt
 
 
 class RevenueClassifierObjective(object):
@@ -13,7 +24,8 @@ class RevenueClassifierObjective(object):
 
     def convert_catboost_params(self, hyper_params):
         # get params for tuning for catboost classifier learning rate: used for reducing gradient decent step size
-        # max_depth of the tree l2_leaf_reg: coefficient at the L2 regularization term of the cost function
+        # depth: max_depth of the tree
+        # l2_leaf_reg: coefficient at the L2 regularization term of the cost function
         # scale_pos_weight: The weight for class 1 in binary classification. The value is used as a multiplier for
         # the weights of objects from class 1.
         return {
