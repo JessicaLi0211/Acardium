@@ -2,28 +2,15 @@
 from model import train_best_model
 from preproc import Preproc
 from eval import eval_model
+import catboost as cb
+import numpy as np
 import sys
 
 # load configuration
 # make it True if your want to use GPU for training
 have_gpu = False
-# skip hyper-parameter optimization and just use provided optimal parameters
-use_predefined_params = False
-# number of iterations of hyper-parameter search
-hyperopt_iterations = 30
-# constant params for the catboost tree
-const_params = dict({
-    'task_type': 'GPU' if have_gpu else 'CPU',
-    'loss_function': 'Logloss',
-    'eval_metric': 'AUC',
-    'custom_metric': ['F1','BalancedAccuracy'],
-    'iterations': 100,
-    'random_seed': 42})
-# tuning metric
-tuning_metric = 'BalancedAccuracy'
-# cv fold
-k_fold = 5
-# params for preprocessing
+
+# params for preprocessing from EDA
 raw_data_file = 'data/online_shoppers_intention.csv'
 metric_col = ['Administrative_Duration',
               'Informational_Duration',
@@ -44,6 +31,27 @@ categorical_col = ['Administrative',
                    'Weekend']
 target_col = 'Revenue'
 test_perc = .2
+
+# hyperparameter tuning
+# skip hyperparameter tuning and just use default parameters
+use_predefined_params = False
+# number of iterations of hyper-parameter search
+hyperopt_iterations = 30
+# constant params for the catboost tree
+const_params = dict({
+    'task_type': 'GPU' if have_gpu else 'CPU',
+    'loss_function': 'Logloss',
+    'eval_metric': 'AUC',
+    'custom_metric': ['F1', 'BalancedAccuracy'],
+    'iterations': 100,
+    'random_seed': 42})
+# tuning metric
+tuning_metric = 'BalancedAccuracy'
+# cv fold
+k_fold = 5
+
+# save model directory
+save_model_dir = 'model.json'
 
 
 # main function
@@ -76,9 +84,14 @@ def classification_model(raw_data_file,
     # evaluate model
     auc = eval_model(data_obj.X_test, data_obj.y_test, model)
 
-    # save model as pickle file
+    # save model
+    model.save_model(
+        save_model_dir,
+        format="json",
+        pool=cb.Pool(data_obj.X_train, data_obj.y_train, cat_features=np.where(data_obj.X_train.dtypes == object)[0]))
 
-# Press the green button in the gutter to run the script.
+
+#  run the script.
 if __name__ == '__main__':
     classification_model(raw_data_file,
                          metric_col,
