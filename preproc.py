@@ -13,7 +13,7 @@ import pandas as pd
 class Preproc:
     def __init__(self, raw_data_file, metric_col, categorical_col, target_col, test_perc):
         # read data
-        self.raw_data = pd.read(raw_data_file)
+        self.raw_data = pd.read_csv(raw_data_file)
         # using additional memory for feature
         self.feature_df = self.raw_data.copy()
         # target attribute
@@ -29,13 +29,16 @@ class Preproc:
 
     def scale_metric_data(self, metric_col):
         # standard scaler
+        print('Scale metric data using standard scaler:')
         scaler = StandardScaler()
         self.feature_df[metric_col] = scaler.fit_transform(self.feature_df[metric_col])
 
     def label_categorical_data(self, categorical_col):
         # change dtype to object
-        self.feature_df[categorical_col] = self.feature_df[categorical_col].astype(object)
+        print('Label categorical label for label encoding')
+        self.feature_df[categorical_col] = self.feature_df[categorical_col].astype(str)
 
     def train_test_split(self, test_perc):
+        print('Train test split:')
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.feature_df, self.label,
                                                                                 test_size=test_perc, random_state=42)
