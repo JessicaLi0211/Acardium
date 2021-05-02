@@ -1,14 +1,17 @@
 # module to preprocess data
 # preprocess steps
 # scale metric data using standard scaler
-# cateogrical data leave as is but change datatype to obj for easy pooling with catboost
+# change datatype of categorical features to object for easy pooling with catboost
+# train/test split (stratified)
 
 # import libs
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 import pandas as pd
 
+
 class Preproc:
-    def __init__(self, raw_data_file, metric_col, categorical_col, target_col):
+    def __init__(self, raw_data_file, metric_col, categorical_col, target_col, test_perc):
         # read data
         self.raw_data = pd.read(raw_data_file)
         # using additional memory for feature
@@ -21,6 +24,8 @@ class Preproc:
         self.scale_metric_data(metric_col)
         # label categorical data
         self.label_categorical_data(categorical_col)
+        # train test split
+        self.train_test_split(test_perc)
 
     def scale_metric_data(self, metric_col):
         # standard scaler
@@ -30,3 +35,7 @@ class Preproc:
     def label_categorical_data(self, categorical_col):
         # change dtype to object
         self.feature_df[categorical_col] = self.feature_df[categorical_col].astype(object)
+
+    def train_test_split(self, test_perc):
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.feature_df, self.label,
+                                                                                test_size=test_perc, random_state=42)
